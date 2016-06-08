@@ -16,11 +16,13 @@ two human players, or between one human player and a computer player.
 
 The tic-tac-toe board looks like:
 
+```
    |   |  
 ---+---+---
    |   | 
 ---+---+---
    |   | 
+```
 
 ##Files Included:
  - api.py: 
