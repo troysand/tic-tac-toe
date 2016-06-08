@@ -1,4 +1,4 @@
-#F Tic-Tac-Toe
+# Tic-Tac-Toe
 
 ## Set-Up Instructions:
 1.  Edit app.yaml with an application id that you get from 
@@ -11,7 +11,16 @@
  
  
 ##Game Description:
-[Tic-Tac-Toe ](https://en.wikipedia.org/wiki/Tic-tac-toe)
+[Tic-Tac-Toe ](https://en.wikipedia.org/wiki/Tic-tac-toe) is a game played between
+two human players, or between one human player and a computer player.
+
+The tic-tac-toe board looks like:
+
+   |   |  
+---+---+---
+   |   | 
+---+---+---
+   |   | 
 
 ##Files Included:
  - api.py: 
