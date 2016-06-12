@@ -12,15 +12,30 @@
  
 ##Game Description:
 [Tic-Tac-Toe ](https://en.wikipedia.org/wiki/Tic-tac-toe) is a game played between
-two human players, or between one human player and a computer player.
+two human players, or between one human player and a computer player. Players are
+assigned to be either X's or O's and then one player goes first. Players take turns marking the board with their assigned letter until on player gets three marks in 
+a row (horizontally, vertically or diagonally). The player that does this first is
+the winner. If no moves are available and no player has won then the game is a draw.
 
 The tic-tac-toe board looks like:
-
+```
    |   |  
 ---+---+---
    |   | 
 ---+---+---
    |   | 
+```
+
+A full game of tic-tac-toe might look like this:
+```
+1)  X |   |    2)  X |   |    3)  X |   |    4)  X | O |    5)  X | O |   
+   ---+---+---    ---+---+---    ---+---+---    ---+---+---    ---+---+---
+      |   |          | O |          | O |          | O |        X | O |   
+   ---+---+---    ---+---+---    ---+---+---    ---+---+---    ---+---+---
+      |   |          |   |        X |   |        X |   |        X |   |   
+```
+
+In the example above, player 1 (X's) won the game by getting three X's in column 1.
 
 ##Files Included:
  - api.py: 
@@ -78,37 +93,40 @@ The tic-tac-toe board looks like:
     - Returns: ScoreForms. 
     - Description: Returns all Scores recorded by the provided player (unordered).
     Will raise a NotFoundException if the User does not exist.
+
+- **get_user_games**
+
+- **cancel_game**
+
+- **get_high_scores**
+
+- **get_user_rankings**
+
+- **get_game_history**
     
- - **get_active_game_count**
-    - Path: 'games/active'
-    - Method: GET
-    - Parameters: None
-    - Returns: StringMessage
-    - Description: Gets the average number of attempts remaining for all games
-    from a previously cached memcache key.
 
 ##Models Included:
  - **User**
-    - Stores unique user_name and (optional) email address.
+    - Stores unique user name and (optional) email address.
     
- - **Game**
+ - **TicTacToeGame**
     - Stores unique game states. Associated with User model via KeyProperty.
     
- - **Score**
+ - **TicTacToeScore**
     - Records completed games. Associated with Users model via KeyProperty.
     
 ##Forms Included:
- - **GameForm**
-    - Representation of a Game's state (urlsafe_key, attempts_remaining,
-    game_over flag, message, user_name).
- - **NewGameForm**
-    - Used to create a new game (user_name, min, max, attempts)
- - **MakeMoveForm**
-    - Inbound make move form (guess).
- - **ScoreForm**
-    - Representation of a completed game's Score (user_name, date, won flag,
-    guesses).
- - **ScoreForms**
+ - **TicTacToeGameForm**
+    - Representation of a Game's state (urlsafe_key, player1_name, player2_name, computer_game flag, number_of_moves, game_over flag, message, board).
+ - **TicTacToeNewGameForm**
+    - Used to create a new game (player1_name, player2_name, player1_symbol, 
+    player2_symbol, computer_game flag)
+ - **TicTacToeMakeMoveForm**
+    - Inbound make move form (move).
+ - **TicTacToeScoreForm**
+    - Representation of a completed game's Score (player1_name, player2_name, 
+    date, winner, number_of_moves).
+ - **TicTacToeScoreForms**
     - Multiple ScoreForm container.
  - **StringMessage**
     - General purpose String container.
