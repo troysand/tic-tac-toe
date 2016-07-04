@@ -90,7 +90,11 @@ class TicTacToeApi(remote.Service):
     """Return the current game state."""
     game = get_by_urlsafe(request.urlsafe_game_key, TicTacToeGame)
     if game:
-      return game.to_form('Time to make a move!')
+      if game.game_over:
+        message = "This game has ended."
+      else:
+        message = "Time to make a move!"
+      return game.to_form(message)
     else:
       raise endpoints.NotFoundException('Game not found!')
 
@@ -113,32 +117,49 @@ class TicTacToeApi(remote.Service):
     if not (request.player_symbol == game.next_to_move()):
       raise endpoints.BadRequestException(
           "It's not {}'s turn!".format(request.player_symbol))
+
+    # make sure that the square is a valid tic-tac-toe square
+    if (request.square < 0 or request.square > 8):
+      raise endpoints.BadRequestException(
+          "That's an invalid move: {}".format(request.square))
+
+    # make sure that the square is unoccupied
+    current_symbol = game.get_square(request.square)
+    if (current_symbol != " "):
+      raise endpoints.BadRequestException(
+        "There is already an {} is square {}".format(current_symbol, request.square))
+
     game.make_move(request.player_symbol, request.square)
     if game.game_over:
       return game.to_form('Game over!')
     return game.to_form("{} moved, now it's {}'s turn.".format(request.player_symbol,
       game.next_to_move()))
 
-  # @endpoints.method(response_message=ScoreForms,
-  #                   path='scores',
-  #                   name='get_scores',
-  #                   http_method='GET')
-  # def get_scores(self, request):
-  #   """Return all scores"""
-  #   return ScoreForms(items=[score.to_form() for score in Score.query()])
+  @endpoints.method(response_message=TicTacToeScoreForms,
+                    path='scores',
+                    name='get_scores',
+                    http_method='GET')
+  def get_scores(self, request):
+    """Return all scores"""
+    return TicTacToeScoreForms(items=[score.to_form() for score in TicTacToeScore.query()])
 
-  # @endpoints.method(request_message=USER_REQUEST,
-  #                   response_message=ScoreForms,
-  #                   path='scores/user/{user_name}',
-  #                   name='get_user_scores',
-  #                   http_method='GET')
-  # def get_user_scores(self, request):
-  #   """Returns all of an individual User's scores"""
-  #   user = User.query(User.name == request.user_name).get()
-  #   if not user:
-  #     raise endpoints.NotFoundException('A User with that name does not exist!')
-  #   scores = Score.query(Score.user == user.key)
-  #   return ScoreForms(items=[score.to_form() for score in scores])
+  @endpoints.method(request_message=USER_REQUEST,
+                    response_message=TicTacToeScoreForms,
+                    path='scores/user/{user_name}',
+                    name='get_user_scores',
+                    http_method='GET')
+  def get_user_scores(self, request):
+    """Returns all of an individual User's scores"""
+    user = User.query(User.name == request.user_name).get()
+    if not user:
+      raise endpoints.NotFoundException('A User with that name does not exist!')
+    # Get the scores for when the user was player1 or player2 and join the
+    # results.
+    scores1 = TicTacToeScore.query(TicTacToeScore.player1 == user.key)
+    scores2 = TicTacToeScore.query(TicTacToeScore.player2 == user.key)
+    score_items = [score.to_form() for score in scores1]
+    score_items +=  [score.to_form() for score in scores2]
+    return TicTacToeScoreForms(items=score_items)
 
   # @endpoints.method(response_message=StringMessage,
   #                   path='games/average_attempts',
