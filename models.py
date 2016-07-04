@@ -101,9 +101,18 @@ class TicTacToeGame(ndb.Model):
         # Add the game to the score 'board'
         if self.computer_game:
             score = TicTacToeScore(player1=self.player1,
-                player1_symbol=self.player1.symbol,
+                player1_symbol=self.player1_symbol,
                 player2_symbol=self.player2_symbol,
                 computer_game=True,
+                date=date.today(), 
+                winner=winner,
+                number_of_moves=self.number_of_moves)
+        else:
+            score = TicTacToeScore(player1=self.player1,
+                player2=self.player2,
+                player1_symbol=self.player1_symbol,
+                player2_symbol=self.player2_symbol,
+                computer_game=False,
                 date=date.today(), 
                 winner=winner,
                 number_of_moves=self.number_of_moves)
@@ -133,6 +142,13 @@ class TicTacToeGame(ndb.Model):
 
         return False
 
+    def get_square(self, square):
+        """
+        Get the symbol occupying the given square. Returns the player's symbol
+        that occupies the square or ' ' if the square is unoccupied.
+        """
+        return self.board[square:square+1]
+
     def make_move(self, player_symbol, square):
         """
         Make a tic-tac-toe move by marking a player's symbol into a given
@@ -151,7 +167,7 @@ class TicTacToeGame(ndb.Model):
                 self.end_game(player_symbol)
             elif self.number_of_moves >= 9:
                 self.end_game('Draw')
-            self.put
+            self.put()
 
 
 class TicTacToeScore(ndb.Model):
@@ -166,8 +182,8 @@ class TicTacToeScore(ndb.Model):
     number_of_moves = ndb.IntegerProperty(required=True)
 
     def to_form(self):
-        return TicTacToeScoreForm(player1=self.player1.get().name,
-            player2=self.player2.get().name, 
+        return TicTacToeScoreForm(player1_name=self.player1.get().name,
+            player2_name=self.player2.get().name, 
             player1_symbol=self.player1_symbol,
             player2_symbol=self.player2_symbol,
             computer_game=self.computer_game,
@@ -204,10 +220,13 @@ class TicTacToeMakeMoveForm(messages.Message):
 class TicTacToeScoreForm(messages.Message):
     """ScoreForm for outbound Score information"""
     player1_name = messages.StringField(1, required=True)
-    player2_name = messages.StringField(2, required=True)
-    date = messages.StringField(3, required=True)
-    winner = messages.StringField(4, required=True)
-    number_of_moves = messages.IntegerField(5, required=True)
+    player1_symbol = messages.StringField(2, required=True)
+    player2_name = messages.StringField(3, required=True)
+    player2_symbol = messages.StringField(4, required=True)
+    date = messages.StringField(5, required=True)
+    winner = messages.StringField(6, required=True)
+    number_of_moves = messages.IntegerField(7, required=True)
+    computer_game = messages.BooleanField(8, required=True)
 
 class TicTacToeScoreForms(messages.Message):
     """Return multiple ScoreForms"""
