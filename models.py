@@ -8,6 +8,7 @@ from datetime import date
 from protorpc import messages
 from google.appengine.ext import ndb
 
+# Empty board used to initialize the board for a new game.
 EMPTY_BOARD = '         '
 
 class User(ndb.Model):
@@ -78,7 +79,6 @@ class TicTacToeGame(ndb.Model):
         form.number_of_moves = self.number_of_moves
         form.game_over = self.game_over
         form.message = message
-        #form.message = "Message"
         form.board = self.board
 
         return form
@@ -111,9 +111,26 @@ class TicTacToeGame(ndb.Model):
 
     def is_winner(self, player_symbol):
         """
-        Determine if the player has won the game.
+        Determine if the player indicated by the given symbol is the winner.
+        Returns True if the player has won or False otherwise.
         """
-        # todo: implement logic here to determine if there is a winner
+        
+        winning_string = player_symbol * 3
+        # Check each row for for a winning string
+        if ((winning_string == self.board[0:3]) or
+            (winning_string == self.board[3:6]) or
+            (winning_string == self.board[6:9])):
+            return True
+        # Check each column for a winning string
+        if ((winning_string == self.board[0:1] + self.board[3:4] + self.board[6:7]) or
+            (winning_string == self.board[1:2] + self.board[4:5] + self.board[7:8]) or
+            (winning_string == self.board[2:3] + self.board[5:6] + self.board[8:9])):
+            return True
+        # Check each diagonal for a winning string
+        if ((winning_string == self.board[0:1] + self.board[4:5] + self.board[8:9]) or
+            (winning_string == self.board[2:3] + self.board[4:5] + self.board[6:7])):
+            return True
+
         return False
 
     def make_move(self, player_symbol, square):
