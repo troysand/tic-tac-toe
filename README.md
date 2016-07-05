@@ -58,7 +58,7 @@ In the example above, player 1 (X's) won the game by getting three X's in column
     - Path: 'game'
     - Method: POST
     - Parameters: user_name, min, max, attempts
-    - Returns: GameForm with initial game state.
+    - Returns: TicTacToeGameForm with initial game state.
     - Description: Creates a new Game. user_name provided must correspond to an
     existing user - will raise a NotFoundException if not. Min must be less than
     max. Also adds a task to a task queue to update the average moves remaining
@@ -68,41 +68,66 @@ In the example above, player 1 (X's) won the game by getting three X's in column
     - Path: 'game/{urlsafe_game_key}'
     - Method: GET
     - Parameters: urlsafe_game_key
-    - Returns: GameForm with current game state.
+    - Returns: TicTacToeGameForm with current game state.
     - Description: Returns the current state of a game.
     
  - **make_move**
     - Path: 'game/{urlsafe_game_key}'
     - Method: PUT
     - Parameters: urlsafe_game_key, guess
-    - Returns: GameForm with new game state.
-    - Description: Accepts a 'guess' and returns the updated state of the game.
-    If this causes a game to end, a corresponding Score entity will be created.
+    - Returns: TicTacToeGameForm with new game state.
+    - Description: 
     
  - **get_scores**
     - Path: 'scores'
     - Method: GET
     - Parameters: None
-    - Returns: ScoreForms.
-    - Description: Returns all Scores in the database (unordered).
+    - Returns: TicTacToeScoreForms.
+    - Description: Returns all TicTacToeScores in the database (unordered).
     
  - **get_user_scores**
     - Path: 'scores/user/{user_name}'
     - Method: GET
     - Parameters: user_name
-    - Returns: ScoreForms. 
+    - Returns: TicTacToeScoreForms. 
     - Description: Returns all Scores recorded by the provided player (unordered).
     Will raise a NotFoundException if the User does not exist.
 
 - **get_user_games**
+    - Path: 'games/user/{user_name}'
+    - Method: GET
+    - Parameters: user_name 
+    - Returns: TicTacToeGameForms
+    - Description: Gets all of the active games for a user.
 
 - **cancel_game**
+    - Path: 'game/cancel/{urlsafe_game_key}'
+    - Method: GET
+    - Parameters: user_name 
+    - Returns: TicTacToeGameForms
+    - Description: Cancels a game in progress, and deletes the game from the 
+    datastore. Cannot be used to delete a game that has already finished.
 
 - **get_high_scores**
+    - Path: 
+    - Method: GET
+    - Parameters: 
+    - Returns: 
+    - Description: 
 
 - **get_user_rankings**
+    - Path: 
+    - Method: 
+    - Parameters: 
+    - Returns: 
+    - Description: 
 
 - **get_game_history**
+    - Path: 
+    - Method: 
+    - Parameters: 
+    - Returns: 
+    - Description: 
     
 
 ##Models Included:
