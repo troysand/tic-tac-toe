@@ -62,7 +62,14 @@ class TicTacToeGame(ndb.Model):
         game.put()
         return game
 
-    def to_form(self, message):
+    def cancel_game(self):
+        """
+        Delete a game from the datastore.
+        """
+        self.key.delete()
+
+
+    def to_form(self, message=""):
         """
         Returns a TicTacToeGameForm representation of the game.
         """
@@ -204,8 +211,16 @@ class TicTacToeGameForm(messages.Message):
     message = messages.StringField(9, required=True)
     board = messages.StringField(10, required=True)
 
+class TicTacToeGameForms(messages.Message):
+    """
+    Return multiple TicTactoeGameForm.
+    """
+    games = messages.MessageField(TicTacToeGameForm, 1, repeated=True)
+
 class TicTacToeNewGameForm(messages.Message):
-    """Used to create a new tic tac toe game."""
+    """
+    Used to create a new tic tac toe game.
+    """
     player1_name = messages.StringField(1, required=True)
     player2_name = messages.StringField(2, required=False)
     player1_symbol = messages.StringField(3, required=False)
@@ -213,12 +228,16 @@ class TicTacToeNewGameForm(messages.Message):
     computer_game = messages.BooleanField(5, required=True)
 
 class TicTacToeMakeMoveForm(messages.Message):
-    """Used to make a move in an existing game"""
+    """
+    Used to make a move in an existing game.
+    """
     player_symbol = messages.StringField(1, required=True)
     square = messages.IntegerField(2, required=True)
 
 class TicTacToeScoreForm(messages.Message):
-    """ScoreForm for outbound Score information"""
+    """
+    TicTacToeScoreForm for outbound score information
+    """
     player1_name = messages.StringField(1, required=True)
     player1_symbol = messages.StringField(2, required=True)
     player2_name = messages.StringField(3, required=True)
@@ -229,15 +248,17 @@ class TicTacToeScoreForm(messages.Message):
     computer_game = messages.BooleanField(8, required=True)
 
 class TicTacToeScoreForms(messages.Message):
-    """Return multiple ScoreForms"""
+    """
+    Return multiple TicTacToeScoreForms.
+    """
     items = messages.MessageField(TicTacToeScoreForm, 1, repeated=True)
 
-class NewGameForm(messages.Message):
-    """Used to create a new game"""
-    user_name = messages.StringField(1, required=True)
-    min = messages.IntegerField(2, default=1)
-    max = messages.IntegerField(3, default=10)
-    attempts = messages.IntegerField(4, default=5)
+# class NewGameForm(messages.Message):
+#     """Used to create a new game"""
+#     user_name = messages.StringField(1, required=True)
+#     min = messages.IntegerField(2, default=1)
+#     max = messages.IntegerField(3, default=10)
+#     attempts = messages.IntegerField(4, default=5)
 
 class StringMessage(messages.Message):
     """StringMessage-- outbound (single) string message"""

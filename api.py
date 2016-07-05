@@ -13,6 +13,7 @@ from google.appengine.api import taskqueue
 from models import User, TicTacToeGame, TicTacToeScore
 from models import StringMessage, TicTacToeNewGameForm, TicTacToeGameForm
 from models import TicTacToeMakeMoveForm, TicTacToeScoreForms
+from models import TicTacToeGameForms
 from utils import get_by_urlsafe
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(TicTacToeNewGameForm)
@@ -93,7 +94,7 @@ class TicTacToeApi(remote.Service):
       if game.game_over:
         message = "This game has ended."
       else:
-        message = "Time to make a move!"
+        message = "Time for {} to make a move!".format(game.next_to_move())
       return game.to_form(message)
     else:
       raise endpoints.NotFoundException('Game not found!')
@@ -160,6 +161,43 @@ class TicTacToeApi(remote.Service):
     score_items = [score.to_form() for score in scores1]
     score_items +=  [score.to_form() for score in scores2]
     return TicTacToeScoreForms(items=score_items)
+
+  @endpoints.method(request_message=USER_REQUEST,
+                    response_message=TicTacToeGameForms,
+                    path='games/user/{user_name}',
+                    name='get_user_games',
+                    http_method='GET')
+  def get_user_games(self, request):
+    """
+    Get a list of all of a user's active games.
+    """
+    user = User.query(User.name == request.user_name).get()
+    if not user:
+      raise endpoints.NotFoundException('A User with that name does not exist!')
+    games1 = TicTacToeGame.query(TicTacToeGame.player1 == user.key)
+    games2 = TicTacToeGame.query(TicTacToeGame.player2 == user.key)
+    game_items = [game.to_form() for game in games1]
+    game_items += [game.to_form() for game in games2]
+    return TicTacToeGameForms(games=game_items)
+
+  @endpoints.method(request_message=GET_GAME_REQUEST,
+                    response_message=StringMessage,
+                    path='game/cancel/{urlsafe_game_key}',
+                    name='cancel_game',
+                    http_method='POST')
+  def cancel_game(self, request):
+    """
+    Cancel a game that has already been started.
+    """
+    game = get_by_urlsafe(request.urlsafe_game_key, TicTacToeGame)
+    if not game:
+      raise endpoints.NotFoundException('Game not found!')
+    if game.game_over:
+      message = "This game has already ended."
+    else:
+      game.cancel_game()
+      message = "The game has been cancelled."
+    return StringMessage(message=message)
 
   @endpoints.method(response_message=StringMessage,
                     path='games/average_attempts',
