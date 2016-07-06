@@ -15,19 +15,23 @@ from models import User
 
 class SendReminderEmail(webapp2.RequestHandler):
     def get(self):
-        """Send a reminder email to each User with an email about games.
-        Called every hour using a cron job"""
+        """
+        Send a reminder email every day to each User that has 
+        incomplete games.
+        """
         app_id = app_identity.get_application_id()
         users = User.query(User.email != None)
         for user in users:
-            subject = 'This is a reminder!'
-            body = 'Hello {}, play Tic-Tac-Toe!'.format(user.name)
-            # This will send test emails, the arguments to send_mail are:
-            # from, to, subject, body
-            mail.send_mail('noreply@{}.appspotmail.com'.format(app_id),
-                           user.email,
-                           subject,
-                           body)
+            if user.has_active_games():
+                # Only send email reminders to users that have games
+                # in progress
+                subject = 'Reminder: You have a tic-tac-toe game in progress!'
+                body = 'Hello {}, Your tic-tac-toe game needs your attention!'.format(user.name)
+                mail.send_mail('noreply@{}.appspotmail.com'.format(app_id),
+                               user.email,
+                               subject,
+                               body)
+        self.response.set_status(200)
 
 
 class UpdateAverageMovesRemaining(webapp2.RequestHandler):
