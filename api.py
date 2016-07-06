@@ -201,6 +201,7 @@ class TicTacToeApi(remote.Service):
     """
     Return the user rankings
     """
+    # Get the rankings in reverse order (from high to low)
     rankings = TicTacToePlayerRanking.query().order(-TicTacToePlayerRanking.ranking)
     return TicTacToePlayerRankingForms(items=[ranking.to_form() for ranking in rankings])
 
