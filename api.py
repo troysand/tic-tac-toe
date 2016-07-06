@@ -40,8 +40,6 @@ class TicTacToeApi(remote.Service):
                     http_method='POST')
   def create_user(self, request):
     """Create a new user. Requires a unique user name."""
-    if request.user_name == "Computer":
-      raise endpoints.ConflictException('Cannot create user: Computer')
     if User.query(User.name == request.user_name).get():
       raise endpoints.ConflictException('User name already exists!')
     user = User(name=request.user_name, email=request.email)
@@ -54,32 +52,25 @@ class TicTacToeApi(remote.Service):
                     name='new_game',
                     http_method='POST')
   def new_game(self, request):
-    """Creates new game"""
+    """
+    Creates new 2-player game. Player 1 and Player 2 must both already be
+    registered users.
+    """
     player1 = User.query(User.name == request.player1_name).get()
     if not player1:
       raise endpoints.NotFoundException('Player 1 does not exist!')
 
-    # If the user requested a game against the computer, then create
-    # a new one-player game. Otherwise, get the second player's name
-    # and make sure the user exists. Then create a two-player game.
-    if request.computer_game:
-      game = TicTacToeGame.new_one_player_game(player1.key)
-    else:
-      if not request.player2_name:
-        raise BadRequestException('Player 2 name required except when playing against the computer.')
-      player2 = User.query(User.name == request.player2_name).get()
-      if not player2:
-        raise endpoints.NotFoundException('Player 2 does not exist!')
-      game = TicTacToeGame.new_two_player_game(player1.key, player2.key)
+    player2 = User.query(User.name == request.player2_name).get()
+    if not player2:
+      raise endpoints.NotFoundException('Player 2 does not exist!')
+    game = TicTacToeGame.new_two_player_game(player1.key, player2.key)
       
 
-    # Use a task queue to update the average attempts remaining.
+    # Use a task queue to update the average moves remaining.
     # This operation is not needed to complete the creation of a new game
     # so it is performed out of sequence.
     #
-    # Todo: implement a task queue task
-    #
-    #taskqueue.add(url='/tasks/cache_average_attempts')
+    taskqueue.add(url='/tasks/cache_average_moves')
     return game.to_form('Good luck playing Tic Tac Toe!')
 
   @endpoints.method(request_message=GET_GAME_REQUEST,
@@ -88,13 +79,16 @@ class TicTacToeApi(remote.Service):
                     name='get_game',
                     http_method='GET')
   def get_game(self, request):
-    """Return the current game state."""
+    """
+    Return the current game state. Raises NotFoundException if the game
+    does not exist.
+    """
     game = get_by_urlsafe(request.urlsafe_game_key, TicTacToeGame)
     if game:
       if game.game_over:
         message = "This game has ended."
       else:
-        message = "Time for {} to make a move!".format(game.next_to_move())
+        message = "Time for '{}' to make a move!".format(game.next_to_move())
       return game.to_form(message)
     else:
       raise endpoints.NotFoundException('Game not found!')
@@ -128,13 +122,14 @@ class TicTacToeApi(remote.Service):
     current_symbol = game.get_square(request.square)
     if (current_symbol != " "):
       raise endpoints.BadRequestException(
-        "There is already an {} is square {}".format(current_symbol, request.square))
+        "There is already an {} in square {}".format(current_symbol, request.square))
 
     game.make_move(request.player_symbol, request.square)
     if game.game_over:
       return game.to_form('Game over!')
-    return game.to_form("{} moved, now it's {}'s turn.".format(request.player_symbol,
-      game.next_to_move()))
+    return game.to_form(
+        "{} moved, now it's {}'s turn.".format(request.player_symbol,
+        game.next_to_move()))
 
   @endpoints.method(response_message=TicTacToeScoreForms,
                     path='scores',
@@ -203,12 +198,12 @@ class TicTacToeApi(remote.Service):
                     path='games/average_attempts',
                     name='get_average_attempts_remaining',
                     http_method='GET')
-  def get_average_attempts(self, request):
+  def get_average_moves(self, request):
     """Get the cached average moves remaining"""
     return StringMessage(message=memcache.get(MEMCACHE_MOVES_REMAINING) or '')
 
   @staticmethod
-  def _cache_average_attempts():
+  def _cache_average_moves():
     """
     Populates memcache with the average moves remaining of all unfinished
     tic-tac-toe games.

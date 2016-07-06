@@ -8,42 +8,25 @@ from datetime import date
 from protorpc import messages
 from google.appengine.ext import ndb
 
-# Empty board used to initialize the board for a new game.
+# Empty board used to initialize the board for a new game. Also used
+# to initialize the moves string.
 EMPTY_BOARD = '         '
 
 class User(ndb.Model):
     """User profile"""
     name = ndb.StringProperty(required=True)
-    email =ndb.StringProperty()
+    email = ndb.StringProperty(required=False)
 
 class TicTacToeGame(ndb.Model):
     """This class represents a Tic Tac Toe game."""
     player1 = ndb.KeyProperty(required=True, kind='User')
-    player2 = ndb.KeyProperty(required=False, kind='User')
+    player2 = ndb.KeyProperty(required=True, kind='User')
     player1_symbol = ndb.StringProperty(required=True, default='X')
     player2_symbol = ndb.StringProperty(required=True, default='O')
-    computer_game = ndb.BooleanProperty(required=True, default=True)
     number_of_moves = ndb.IntegerProperty(required=True, default=0)
     game_over = ndb.BooleanProperty(required=True, default=False)
     board = ndb.StringProperty(required=True, default=EMPTY_BOARD)
-
-    @classmethod
-    def new_one_player_game(cls, player1, player1_symbol):
-        """
-        Create a new Tic Tac Toe game initialized for one player against the 
-        computer.
-        """
-        game = TicTacToeGame(player1=player1,
-            player1_symbol='X',
-            player2_symbol='O',
-            player1_first=True,
-            computer_game=True,
-            number_of_moves=0,
-            board=EMPTY_BOARD,
-            game_over=False)
-
-        game.put()
-        return game
+    moves = ndb.StringProperty(required=True, default=EMPTY_BOARD)
 
     @classmethod
     def new_two_player_game(cls, player1, player2):
@@ -54,10 +37,10 @@ class TicTacToeGame(ndb.Model):
             player2=player2,
             player1_symbol='X',
             player2_symbol='O',
-            computer_game=False,
             number_of_moves=0,
+            game_over=False,
             board=EMPTY_BOARD,
-            game_over=False)
+            moves=EMPTY_BOARD)
 
         game.put()
         return game
@@ -77,16 +60,13 @@ class TicTacToeGame(ndb.Model):
         form.urlsafe_key = self.key.urlsafe()
         form.player1_name = self.player1.get().name
         form.player1_symbol = self.player1_symbol
-        if self.computer_game:
-            form.player2_name = "Computer"
-        else:
-            form.player2_name = self.player2.get().name
+        form.player2_name = self.player2.get().name
         form.player2_symbol = self.player2_symbol
-        form.computer_game = self.computer_game
         form.number_of_moves = self.number_of_moves
         form.game_over = self.game_over
         form.message = message
         form.board = self.board
+        form.moves = self.moves
 
         return form
 
@@ -105,24 +85,31 @@ class TicTacToeGame(ndb.Model):
         """
         self.game_over = True
         self.put()
-        # Add the game to the score 'board'
-        if self.computer_game:
-            score = TicTacToeScore(player1=self.player1,
-                player1_symbol=self.player1_symbol,
-                player2_symbol=self.player2_symbol,
-                computer_game=True,
-                date=date.today(), 
-                winner=winner,
-                number_of_moves=self.number_of_moves)
+
+        # Calculate scores for each player. Players get 3 points for a win,
+        # 1 point for a draw, and 0 points for a loss.
+        if winner == 'Draw':
+            player1_score = 1
+            player2_score = 1
         else:
-            score = TicTacToeScore(player1=self.player1,
-                player2=self.player2,
-                player1_symbol=self.player1_symbol,
-                player2_symbol=self.player2_symbol,
-                computer_game=False,
-                date=date.today(), 
-                winner=winner,
-                number_of_moves=self.number_of_moves)
+            if self.player1_symbol == winner:
+                player1_score = 3
+                player2_score = 0
+            else:
+                player1_score = 0
+                player2_score = 3
+
+        # Add the game to the score 'board'
+        score = TicTacToeScore(player1=self.player1,
+            player2=self.player2,
+            player1_symbol=self.player1_symbol,
+            player2_symbol=self.player2_symbol,
+            player1_score=player1_score,
+            player2_score=player2_score,
+            date=date.today(), 
+            winner=winner,
+            number_of_moves=self.number_of_moves,
+            game=self.key)
         score.put()
 
     def is_winner(self, player_symbol):
@@ -167,6 +154,11 @@ class TicTacToeGame(ndb.Model):
             boardlist[square] = player_symbol
             self.board = "".join(boardlist)
 
+            # save the move
+            moveslist = list(self.moves)
+            moveslist[self.number_of_moves] = str(square)
+            self.moves = "".join(moveslist)
+
             self.number_of_moves = self.number_of_moves + 1
 
             # determine if the move has created a winner
@@ -183,20 +175,24 @@ class TicTacToeScore(ndb.Model):
     player2 = ndb.KeyProperty(required=False, kind='User')
     player1_symbol = ndb.StringProperty(required=True, default='X')
     player2_symbol = ndb.StringProperty(required=True, default='O')
-    computer_game = ndb.BooleanProperty(required=True, default=True)
+    player1_score = ndb.IntegerProperty(required=True, default=0)
+    player2_score = ndb.IntegerProperty(required=True, default=0)
     date = ndb.DateProperty(required=True)
     winner = ndb.StringProperty(required=True)
-    number_of_moves = ndb.IntegerProperty(required=True)
+    number_of_moves = ndb.IntegerProperty(required=True) 
+    game = ndb.KeyProperty(required=True, kind='TicTacToeGame')
 
     def to_form(self):
         return TicTacToeScoreForm(player1_name=self.player1.get().name,
             player2_name=self.player2.get().name, 
             player1_symbol=self.player1_symbol,
             player2_symbol=self.player2_symbol,
-            computer_game=self.computer_game,
+            player1_score=self.player1_score,
+            player2_score=self.player2_score,
             date=str(self.date), 
             winner=self.winner,
-            number_of_moves=self.number_of_moves)
+            number_of_moves=self.number_of_moves,
+            urlsafe_game_key = self.game.urlsafe())
 
 class TicTacToeGameForm(messages.Message):
     """TicTacToeGameForm for outbound game state information."""
@@ -205,11 +201,11 @@ class TicTacToeGameForm(messages.Message):
     player1_symbol = messages.StringField(3, required=True)
     player2_name = messages.StringField(4, required=True)
     player2_symbol = messages.StringField(5, required=True)
-    computer_game = messages.BooleanField(6, required=True)
     number_of_moves = messages.IntegerField(7, required=True)
     game_over = messages.BooleanField(8, required=True)
     message = messages.StringField(9, required=True)
     board = messages.StringField(10, required=True)
+    moves = messages.StringField(11, required=True)
 
 class TicTacToeGameForms(messages.Message):
     """
@@ -225,7 +221,6 @@ class TicTacToeNewGameForm(messages.Message):
     player2_name = messages.StringField(2, required=False)
     player1_symbol = messages.StringField(3, required=False)
     player2_symbol = messages.StringField(4, required=False)
-    computer_game = messages.BooleanField(5, required=True)
 
 class TicTacToeMakeMoveForm(messages.Message):
     """
@@ -242,10 +237,12 @@ class TicTacToeScoreForm(messages.Message):
     player1_symbol = messages.StringField(2, required=True)
     player2_name = messages.StringField(3, required=True)
     player2_symbol = messages.StringField(4, required=True)
-    date = messages.StringField(5, required=True)
-    winner = messages.StringField(6, required=True)
-    number_of_moves = messages.IntegerField(7, required=True)
-    computer_game = messages.BooleanField(8, required=True)
+    player1_score = messages.IntegerField(5, required=True)
+    player2_score = messages.IntegerField(6, required=True)
+    date = messages.StringField(7, required=True)
+    winner = messages.StringField(8, required=True)
+    number_of_moves = messages.IntegerField(9, required=True)
+    urlsafe_game_key = messages.StringField(11, required=True)
 
 class TicTacToeScoreForms(messages.Message):
     """
@@ -253,13 +250,8 @@ class TicTacToeScoreForms(messages.Message):
     """
     items = messages.MessageField(TicTacToeScoreForm, 1, repeated=True)
 
-# class NewGameForm(messages.Message):
-#     """Used to create a new game"""
-#     user_name = messages.StringField(1, required=True)
-#     min = messages.IntegerField(2, default=1)
-#     max = messages.IntegerField(3, default=10)
-#     attempts = messages.IntegerField(4, default=5)
-
 class StringMessage(messages.Message):
-    """StringMessage-- outbound (single) string message"""
+    """
+    StringMessage-- outbound (single) string message
+    """
     message = messages.StringField(1, required=True)
