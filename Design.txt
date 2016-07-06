@@ -1,0 +1,46 @@
+Tic-Tac-Toe Game Design
+
+Design Goals
+The goals for this design were to create a scalable implementation
+of a tic-tac-toe game that can handle many players and many games.
+A scoring system needed to be included so that players could
+be ranked according to their wins, draws and losses.
+
+The Game Board
+The game board was designed to be as simple as possible while
+still representing the current game state. I decided to use a 
+String of length nine to represent the nine squares in the grid.
+So the first character in the String is square 0, the second
+character is square 1, and so on. So if the first player makes
+a move into the middle square the game board would look like:
+
+board = '    X    '
+
+Then if the second player decided to move into the botton right
+square the game board would look like:
+
+board = '    X   O'
+
+Game History
+I also decided to store the moves in the same manner in a
+String of length nine. The moves are stored in the string
+in the order that they occured. So in the previous example when 
+player 1 moved into square 4 and then player 2 moved into
+square 8, the moves string would look like:
+
+moves = '48       '
+
+From this string the entire game history can be found.
+
+The drawback to using a String to represent the game board is that 
+is has to be converted into a list to make a move and check for a 
+winner, and then joined back into a String to store in the datastore
+and put into the game form.
+
+The Player Rankings
+In order to rank the players, I had to design a scoring system.
+I decided to give each player three points for a win, one point for
+a draw, and zero points for a loss. To determine a player's ranking,
+the total score for a player is divided by the total number of games.
+This gives a float value from 0.0 to 3.0. Using this number players
+can be ranked from first to last.
