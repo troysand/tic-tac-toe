@@ -40,6 +40,24 @@ A full game of tic-tac-toe might look like this:
 
 In the example above, player 1 (X's) won the game by getting three X's in column 1.
 
+###Playing the Game
+In this version of tic-tac-toe, the squares are numbered from 0 to 8. The 
+board below shows each of the square numbers on the grid:
+
+```
+ 0 | 1 | 2
+---+---+---
+ 3 | 4 | 5
+---+---+---
+ 6 | 7 | 8
+```
+
+A player makes
+a move by calling the make_move endpoint with the player's symbol and the square
+the player wishes to mark. After a legal move has been made, A TicTacToeGameForm
+is returned representing the new game state, and with a message indicating
+whether the game is over or if it is the next player's turn.
+
 ###Scoring
 In this implementation of tic-tac-toe, players receive 3 points for a win, 1 point for
 a draw, and 0 points for a loss.
@@ -114,24 +132,26 @@ adding up a players total score and dividing by the number of games played.
 - **cancel_game**
     - Path: 'game/cancel/{urlsafe_game_key}'
     - Method: GET
-    - Parameters: user_name 
+    - Parameters: urlsafe_game_key 
     - Returns: TicTacToeGameForms
     - Description: Cancels a game in progress, and deletes the game from the 
     datastore. Cannot be used to delete a game that has already finished.
 
 - **get_user_rankings**
-    - Path: 
-    - Method: 
-    - Parameters: 
-    - Returns: 
-    - Description: 
+    - Path: 'scores/rankings'
+    - Method: GET
+    - Parameters: None
+    - Returns: TicTacToePlayerRankingForms 
+    - Description: Gets the player game record and rankings in order from 
+    highest ranking to lowest.
 
 - **get_game_history**
-    - Path: 
-    - Method: 
-    - Parameters: 
-    - Returns: 
-    - Description: 
+    - Path: game/history/{urlsafe_game_key}
+    - Method: GET
+    - Parameters: urlsafe_game_key
+    - Returns: TicTacToeGameHistoryForm
+    - Description: Gets the game history showing each player's moves in
+    the proper order.
     
 
 ##Models Included:
@@ -143,6 +163,9 @@ adding up a players total score and dividing by the number of games played.
     
  - **TicTacToeScore**
     - Records completed games. Associated with Users model via KeyProperty.
+
+ - **TicTacToePlayerRanking**
+    - Contains the player's game record and current ranking.
     
 ##Forms Included:
  - **TicTacToeGameForm**
@@ -155,7 +178,16 @@ adding up a players total score and dividing by the number of games played.
  - **TicTacToeScoreForm**
     - Representation of a completed game's Score (player1_name, player2_name, 
     date, winner, number_of_moves).
- - **TicTacToeScoreForms**
+ - **TicTacToeScoreForms** 
     - Multiple ScoreForm container.
+ - **TicTacToePlayerRankingForm**
+    - Representation of the player's game record, including wins, draws, 
+    total games and current ranking.
+ - **TicTacToePlayerRankingForms**
+    - Multiple TicTacToePlayerRankingForm container.
+ - **TicTacToeSingleMoveForm**
+    - Representation of a single move in a game history.
+ - **TicTacToeGameHistoryForm**
+    - A representation of a game showing each move in order.
  - **StringMessage**
     - General purpose String container.
