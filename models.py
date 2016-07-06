@@ -232,11 +232,18 @@ class TicTacToeGame(ndb.Model):
         """
         moveslist = list(self.moves)
         movesFormList = []
+        move_number = 1
         for move in moveslist:
             if move != ' ':
+                if (move_number % 2 == 0):
+                    player_symbol = self.player2_symbol
+                else:
+                    player_symbol = self.player1_symbol
                 movesFormList.append(TicTacToeSingleMoveForm(
-                    player_symbol='?',
+                    move_number=move_number,
+                    player_symbol=player_symbol,
                     square=int(move)))
+                move_number += 1
         return TicTacToeGameHistoryForm(player1_name=self.player1.get().name,
             player1_symbol=self.player1_symbol,
             player2_name=self.player2.get().name,
@@ -400,8 +407,9 @@ class TicTacToeSingleMoveForm(messages.Message):
     """
     Contains the information for a single game move.
     """
-    player_symbol = messages.StringField(1, required=True)
-    square = messages.IntegerField(2, required=True)
+    move_number = messages.IntegerField(1, required=True)
+    player_symbol = messages.StringField(2, required=True)
+    square = messages.IntegerField(3, required=True)
 
 class TicTacToeGameHistoryForm(messages.Message):
     """
