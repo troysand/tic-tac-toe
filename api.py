@@ -13,7 +13,9 @@ from google.appengine.api import taskqueue
 from models import User, TicTacToeGame, TicTacToeScore
 from models import StringMessage, TicTacToeNewGameForm, TicTacToeGameForm
 from models import TicTacToeMakeMoveForm, TicTacToeScoreForms
-from models import TicTacToeGameForms
+from models import TicTacToeGameForms, TicTacToePlayerRanking
+from models import TicTacToePlayerRankingForm, TicTacToePlayerRankingForms
+from models import TicTacToeGameHistoryForm
 from utils import get_by_urlsafe
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(TicTacToeNewGameForm)
@@ -42,8 +44,7 @@ class TicTacToeApi(remote.Service):
     """Create a new user. Requires a unique user name."""
     if User.query(User.name == request.user_name).get():
       raise endpoints.ConflictException('User name already exists!')
-    user = User(name=request.user_name, email=request.email)
-    user.put()
+    user = User.new_user(request.user_name, request.email)
     return StringMessage(message='User {} created!'.format(request.user_name))
 
   @endpoints.method(request_message=NEW_GAME_REQUEST,
@@ -124,12 +125,8 @@ class TicTacToeApi(remote.Service):
       raise endpoints.BadRequestException(
         "There is already an {} in square {}".format(current_symbol, request.square))
 
-    game.make_move(request.player_symbol, request.square)
-    if game.game_over:
-      return game.to_form('Game over!')
-    return game.to_form(
-        "{} moved, now it's {}'s turn.".format(request.player_symbol,
-        game.next_to_move()))
+    message = game.make_move(request.player_symbol, request.square)
+    return game.to_form(message)
 
   @endpoints.method(response_message=TicTacToeScoreForms,
                     path='scores',
@@ -169,8 +166,10 @@ class TicTacToeApi(remote.Service):
     user = User.query(User.name == request.user_name).get()
     if not user:
       raise endpoints.NotFoundException('A User with that name does not exist!')
-    games1 = TicTacToeGame.query(TicTacToeGame.player1 == user.key)
-    games2 = TicTacToeGame.query(TicTacToeGame.player2 == user.key)
+    games1 = TicTacToeGame.query(TicTacToeGame.player1 == user.key,
+      TicTacToeGame.game_over != True)
+    games2 = TicTacToeGame.query(TicTacToeGame.player2 == user.key,
+      TicTacToeGame.game_over != True)
     game_items = [game.to_form() for game in games1]
     game_items += [game.to_form() for game in games2]
     return TicTacToeGameForms(games=game_items)
@@ -193,6 +192,32 @@ class TicTacToeApi(remote.Service):
       game.cancel_game()
       message = "The game has been cancelled."
     return StringMessage(message=message)
+
+  @endpoints.method(response_message=TicTacToePlayerRankingForms,
+                    path='scores/rankings',
+                    name='get_user_rankings',
+                    http_method='GET')
+  def get_user_rankings(self, request):
+    """
+    Return the user rankings
+    """
+    rankings = TicTacToePlayerRanking.query().order(-TicTacToePlayerRanking.ranking)
+    return TicTacToePlayerRankingForms(items=[ranking.to_form() for ranking in rankings])
+
+
+  @endpoints.method(request_message=GET_GAME_REQUEST,
+                    response_message=TicTacToeGameHistoryForm,
+                    path='game/history/{urlsafe_game_key}',
+                    name='get_game_history',
+                    http_method='GET')
+  def get_game_history(self, request):
+    """
+    Return the move history for a game.
+    """
+    game = get_by_urlsafe(request.urlsafe_game_key, TicTacToeGame)
+    if not game:
+      raise endpoints.NotFoundException('Game not found!')
+    return game.get_game_history_form()
 
   @endpoints.method(response_message=StringMessage,
                     path='games/average_attempts',
