@@ -12,11 +12,13 @@
  
 ##Game Description:
 [Tic-Tac-Toe ](https://en.wikipedia.org/wiki/Tic-tac-toe) is a game played between
-two human players, or between one human player and a computer player. Players are
-assigned to be either X's or O's and then one player goes first. Players take turns marking the board with their assigned letter until on player gets three marks in 
-a row (horizontally, vertically or diagonally). The player that does this first is
-the winner. If no moves are available and no player has won then the game is a draw.
+two players on a 3x3 grid. Players are assigned to be either X's or O's and then one player goes 
+first. Players take turns marking the board with their assigned letter until one 
+player gets three marks in a row either horizontally, vertically or diagonally. 
+The player that does this first is the winner. If no moves are available and no 
+player has won then the game is a draw.
 
+###Game Board
 The tic-tac-toe board looks like:
 ```
    |   |  
@@ -26,6 +28,7 @@ The tic-tac-toe board looks like:
    |   | 
 ```
 
+###Game Example
 A full game of tic-tac-toe might look like this:
 ```
 1)  X |   |    2)  X |   |    3)  X |   |    4)  X | O |    5)  X | O |   
@@ -36,6 +39,14 @@ A full game of tic-tac-toe might look like this:
 ```
 
 In the example above, player 1 (X's) won the game by getting three X's in column 1.
+
+###Scoring
+In this implementation of tic-tac-toe, players receive 3 points for a win, 1 point for
+a draw, and 0 points for a loss.
+
+###Player Rankings
+Players are ranked according to their averages scores. The average score is determined by 
+adding up a players total score and dividing by the number of games played.
 
 ##Files Included:
  - api.py: 
@@ -90,8 +101,8 @@ In the example above, player 1 (X's) won the game by getting three X's in column
     - Method: GET
     - Parameters: user_name
     - Returns: TicTacToeScoreForms. 
-    - Description: Returns all Scores recorded by the provided player (unordered).
-    Will raise a NotFoundException if the User does not exist.
+    - Description: Returns all TicTacToeScores recorded by the provided player 
+    (unordered).
 
 - **get_user_games**
     - Path: 'games/user/{user_name}'
@@ -107,13 +118,6 @@ In the example above, player 1 (X's) won the game by getting three X's in column
     - Returns: TicTacToeGameForms
     - Description: Cancels a game in progress, and deletes the game from the 
     datastore. Cannot be used to delete a game that has already finished.
-
-- **get_high_scores**
-    - Path: 
-    - Method: GET
-    - Parameters: 
-    - Returns: 
-    - Description: 
 
 - **get_user_rankings**
     - Path: 
