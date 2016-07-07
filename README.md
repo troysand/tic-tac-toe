@@ -103,9 +103,10 @@ adding up a players total score and dividing by the number of games played.
  - **make_move**
     - Path: 'game/{urlsafe_game_key}'
     - Method: PUT
-    - Parameters: urlsafe_game_key, guess
+    - Parameters: urlsafe_game_key, player symbol, square
     - Returns: TicTacToeGameForm with new game state.
-    - Description: 
+    - Description: Makes a move in a tic-tac-toe game. Takes a player symbol
+    and a square number and then marks the square with the player's symbol.
     
  - **get_scores**
     - Path: 'scores'
@@ -131,7 +132,7 @@ adding up a players total score and dividing by the number of games played.
 
 - **cancel_game**
     - Path: 'game/cancel/{urlsafe_game_key}'
-    - Method: GET
+    - Method: DELETE
     - Parameters: urlsafe_game_key 
     - Returns: TicTacToeGameForms
     - Description: Cancels a game in progress, and deletes the game from the 
