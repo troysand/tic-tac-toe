@@ -20,7 +20,13 @@ class User(ndb.Model):
     @classmethod
     def new_user(cls, name, email):
         """
-        Create a new user with the given name and email address.
+        Create a new user.
+
+        Args:
+            name: The user name.
+            email: Optional email address.
+        Returns:
+            user: The newly created User object.
         """
         user = User(name=name, email=email)
         user.put()
@@ -33,9 +39,17 @@ class User(ndb.Model):
                                          ranking=0.0)
         ranking.put()
 
+        return user
+
     def has_active_games(self):
         """
-        Returns True if the User has any tic-tac-toe games in progress.
+        Determine if the user has any active games.
+
+        Args:
+            None
+        Returns:
+            True if the user has any games in progress,
+            False otherwise.
         """
         count = TicTacToeGame.query(
             TicTacToeGame.player1 == self.key,
@@ -65,6 +79,11 @@ class TicTacToeGame(ndb.Model):
     def new_two_player_game(cls, player1, player2):
         """
         Create a new Tic Tac Toe game initialized for two players.
+
+        Args:
+            player1, player2: User objects for the two players.
+        Returns:
+            game: The newly created game.
         """
         game = TicTacToeGame(player1=player1,
                              player2=player2,
@@ -87,6 +106,11 @@ class TicTacToeGame(ndb.Model):
     def to_form(self, message=""):
         """
         Returns a TicTacToeGameForm representation of the game.
+
+        Args:
+            message: A message to put into the game form.
+        Returns:
+            form: The newly created form.
         """
         form = TicTacToeGameForm()
         form.urlsafe_key = self.key.urlsafe()
@@ -104,7 +128,12 @@ class TicTacToeGame(ndb.Model):
 
     def next_to_move(self):
         """
-        Get the symbol of the next player to move. i.e. 'X' or 'O'
+        Get the next player to move.
+
+        Args:
+            None
+        Returns:
+            The symbol of the next player to move.
         """
         if (self.number_of_moves % 2 == 0):
             return self.player1_symbol
@@ -114,6 +143,12 @@ class TicTacToeGame(ndb.Model):
     def end_game(self, winner):
         """
         Ends the game.
+
+        Args:
+            winner: The symbol of the player who won the game,
+            or 'Draw' if the game is a draw.
+        Returns:
+            None
         """
         self.game_over = True
         self.put()
@@ -166,7 +201,11 @@ class TicTacToeGame(ndb.Model):
     def is_winner(self, player_symbol):
         """
         Determine if the player indicated by the given symbol is the winner.
-        Returns True if the player has won or False otherwise.
+        
+        Args:
+            player_symbol: The symbol of the player to test.
+        Returns:
+            True if the player has won or False otherwise.
         """
 
         winning_string = player_symbol * 3
@@ -194,15 +233,26 @@ class TicTacToeGame(ndb.Model):
 
     def get_square(self, square):
         """
-        Get the symbol occupying the given square. Returns the player's symbol
-        that occupies the square or ' ' if the square is unoccupied.
+        Get the symbol occupying the given square.
+
+        Args:
+            square: The square to get.
+        Returns:
+            the player's symbol that occupies the square or ' '
+            if the square is unoccupied.
         """
         return self.board[square:square + 1]
 
     def make_move(self, player_symbol, square):
         """
         Make a tic-tac-toe move by marking a player's symbol into a given
-        square. Return a message about the game state.
+        square.
+
+        Args:
+            player_symbol: The player's symbol.
+            square: The square to put the symbol in.
+        Return:
+            A message about the game state.
         """
         if not self.game_over:
             # mark the symbol on the board
@@ -234,6 +284,12 @@ class TicTacToeGame(ndb.Model):
     def get_game_history_form(self):
         """
         Get the game history in a TicTacToeGameHistoryForm.
+
+        Args:
+            None
+        Returns:
+            TicTacToGameHistoryForm: A form containing a representation
+            of the game history.
         """
         moveslist = list(self.moves)
         movesFormList = []
@@ -272,6 +328,15 @@ class TicTacToeScore(ndb.Model):
     game = ndb.KeyProperty(required=True, kind='TicTacToeGame')
 
     def to_form(self):
+        """
+        Get a form representation of the game score.
+
+        Args:
+            None
+        Returns:
+            TicTacToeScoreForm: A form containing the game score
+            information.
+        """
         return TicTacToeScoreForm(player1_name=self.player1.get().name,
                                   player2_name=self.player2.get().name,
                                   player1_symbol=self.player1_symbol,
@@ -364,8 +429,6 @@ class TicTacToeNewGameForm(messages.Message):
     """
     player1_name = messages.StringField(1, required=True)
     player2_name = messages.StringField(2, required=False)
-    player1_symbol = messages.StringField(3, required=False)
-    player2_symbol = messages.StringField(4, required=False)
 
 
 class TicTacToeMakeMoveForm(messages.Message):
