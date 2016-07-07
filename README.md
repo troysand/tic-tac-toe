@@ -1,24 +1,17 @@
 # Tic-Tac-Toe
 
-## Set-Up Instructions:
+## Set-Up Instructions
 1.  Edit app.yaml with an application id that you get from 
 <http://console.developers.google.com>.
 1.  Run the app with the devserver using dev_appserver.py DIR, and ensure it's
  running by visiting the API Explorer - by default localhost:8080/_ah/api/explorer.
 1.  (Optional) Generate your client library(ies) with the endpoints tool.
  Deploy your application.
- 
- 
- 
-##Game Description:
-[Tic-Tac-Toe ](https://en.wikipedia.org/wiki/Tic-tac-toe) is a game played between
-two players on a 3x3 grid. Players are assigned to be either X's or O's and then one player goes 
-first. Players take turns marking the board with their assigned letter until one 
-player gets three marks in a row either horizontally, vertically or diagonally. 
-The player that does this first is the winner. If no moves are available and no 
-player has won then the game is a draw.
 
-###Game Board
+## Game Description
+[Tic-Tac-Toe ](https://en.wikipedia.org/wiki/Tic-tac-toe) is a game played between two players on a 3x3 grid. Players are assigned to be either X's or O's and then one player goes first. Players take turns marking the board with their assigned letter until one player gets three marks in a row either horizontally, vertically or diagonally. The player that does this first is the winner. If no moves are available and no player has won then the game is a draw.
+
+### Game Board
 The tic-tac-toe board looks like:
 ```
    |   |  
@@ -28,7 +21,7 @@ The tic-tac-toe board looks like:
    |   | 
 ```
 
-###Game Example
+### Game Example
 A full game of tic-tac-toe might look like this:
 ```
 1)  X |   |    2)  X |   |    3)  X |   |    4)  X | O |    5)  X | O |   
@@ -40,7 +33,7 @@ A full game of tic-tac-toe might look like this:
 
 In the example above, player 1 (X's) won the game by getting three X's in column 1.
 
-###Playing the Game
+### Playing the Game
 In this version of tic-tac-toe, the squares are numbered from 0 to 8. The 
 board below shows each of the square numbers on the grid:
 
@@ -52,21 +45,15 @@ board below shows each of the square numbers on the grid:
  6 | 7 | 8
 ```
 
-A player makes
-a move by calling the make_move endpoint with the player's symbol and the square
-the player wishes to mark. After a legal move has been made, A TicTacToeGameForm
-is returned representing the new game state, and with a message indicating
-whether the game is over or if it is the next player's turn.
+A player makes a move by calling the make_move endpoint with the player's symbol and the square the player wishes to mark. After a legal move has been made, A TicTacToeGameForm is returned representing the new game state, and with a message indicating whether the game is over or if it is the next player's turn.
 
-###Scoring
-In this implementation of tic-tac-toe, players receive 3 points for a win, 1 point for
-a draw, and 0 points for a loss.
+### Scoring
+In this implementation of tic-tac-toe, players receive 3 points for a win, 1 point for a draw, and 0 points for a loss.
 
-###Player Rankings
-Players are ranked according to their averages scores. The average score is determined by 
-adding up a players total score and dividing by the number of games played.
+### Player Rankings
+Players are ranked according to their averages scores. The average score is determined by adding up a players total score and dividing by the number of games played.
 
-##Files Included:
+## Files Included:
  - api.py: 
  - app.yaml: 
  - cron.yaml: 
@@ -74,7 +61,7 @@ adding up a players total score and dividing by the number of games played.
  - models.py: 
  - utils.py: 
 
-##Endpoints Included:
+## Endpoints Included:
  - **create_user**
     - Path: 'user'
     - Method: POST
@@ -86,12 +73,9 @@ adding up a players total score and dividing by the number of games played.
  - **new_game**
     - Path: 'game'
     - Method: POST
-    - Parameters: user_name, min, max, attempts
+    - Parameters: player1, player2
     - Returns: TicTacToeGameForm with initial game state.
-    - Description: Creates a new Game. user_name provided must correspond to an
-    existing user - will raise a NotFoundException if not. Min must be less than
-    max. Also adds a task to a task queue to update the average moves remaining
-    for active games.
+    - Description: Creates a new tic-tac-toe game. Player1 and player2 must correspond to existing users, will raise a NotFoundException if not.
      
  - **get_game**
     - Path: 'game/{urlsafe_game_key}'
@@ -168,7 +152,7 @@ adding up a players total score and dividing by the number of games played.
  - **TicTacToePlayerRanking**
     - Contains the player's game record and current ranking.
     
-##Forms Included:
+## Forms Included:
  - **TicTacToeGameForm**
     - Representation of a Game's state (urlsafe_key, player1_name, player2_name, computer_game flag, number_of_moves, game_over flag, message, board).
  - **TicTacToeNewGameForm**
