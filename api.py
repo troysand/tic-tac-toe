@@ -9,12 +9,21 @@ from protorpc import remote, messages
 from google.appengine.api import memcache
 from google.appengine.api import taskqueue
 
-from models import User, TicTacToeGame, TicTacToeScore
-from models import StringMessage, TicTacToeNewGameForm, TicTacToeGameForm
-from models import TicTacToeMakeMoveForm, TicTacToeScoreForms
-from models import TicTacToeGameForms, TicTacToePlayerRanking
-from models import TicTacToePlayerRankingForms
-from models import TicTacToeGameHistoryForm
+from models import (
+    StringMessage,
+    TicTacToeGame,
+    TicTacToeGameForm,
+    TicTacToeGameForms,
+    TicTacToeGameHistoryForm,
+    TicTacToeMakeMoveForm,
+    TicTacToeNewGameForm,
+    TicTacToePlayerRanking,
+    TicTacToePlayerRankingForms,
+    TicTacToeScore,
+    TicTacToeScoreForms,
+    User,
+)
+
 from utils import get_by_urlsafe
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(TicTacToeNewGameForm)
