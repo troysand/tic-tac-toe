@@ -4,7 +4,6 @@ api.py - Create and configure the Tic Tac Toe game API.
 
 """
 
-import logging
 import endpoints
 from protorpc import remote, messages
 from google.appengine.api import memcache
@@ -178,7 +177,7 @@ class TicTacToeApi(remote.Service):
                     response_message=StringMessage,
                     path='game/cancel/{urlsafe_game_key}',
                     name='cancel_game',
-                    http_method='POST')
+                    http_method='DELETE')
   def cancel_game(self, request):
     """
     Cancel a game that has already been started.
