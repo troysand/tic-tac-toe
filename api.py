@@ -162,7 +162,7 @@ class TicTacToeApi(remote.Service):
                 "It's not {}'s turn!".format(request.player_symbol))
 
         # make sure that the square is a valid tic-tac-toe square
-        if (request.square < 0 or request.square > 8):
+        if request.square not in range(9):
             raise endpoints.BadRequestException(
                 "That's an invalid move: {}".format(request.square))
 
